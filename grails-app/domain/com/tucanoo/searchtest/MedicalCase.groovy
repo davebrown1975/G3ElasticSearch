@@ -21,6 +21,7 @@ class MedicalCase extends CaseFile {
     }
 
     static searchable = {
+      root true
       only = ['patientName']
     }
 }

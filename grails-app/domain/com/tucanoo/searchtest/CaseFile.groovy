@@ -17,6 +17,7 @@ abstract class CaseFile {
     }
 
     static searchable = {
+      root true
       only = ['caseId','caseName','contactName']
     }
 }

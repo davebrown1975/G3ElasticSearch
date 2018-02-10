@@ -16,7 +16,8 @@ class InheritanceTestSpec extends Specification {
 
   @Autowired
   ElasticSearchService elasticSearchService
-  
+  ElasticSearchAdminService elasticSearchAdminService
+
   boolean addedTestData = false
 
   void "Test elastic search returns results for searches against fields in both base and subclasses"() {
@@ -24,24 +25,31 @@ class InheritanceTestSpec extends Specification {
       // add sample data
       addTestData()
 
-      // reindex
+      // ES doesn't appear to be mirroring changes so force reindex - doesn't appear to be happening either.
       elasticSearchService.index()
+      elasticSearchAdminService.refresh()
 
+
+    when:
       // first search against field in base class
-      def baseSearchResult = elasticSearchService.search('IC999')
-      println baseSearchResult
+      def baseSearchResult = elasticSearchService.search('Test')
 
       // secondly search against data we know is in MedicalCase subclass
       def subclassSearch1 = elasticSearchService.search('Mary')
-      println subclassSearch1
 
-    expect:
+    then:
+      // check we've definately got expected records in the db
       2 == CaseFile.count()
       1 == MedicalCase.count()
       1 == InsuranceCase.count()
 
+      // check results were returned from ES
       1 == baseSearchResult?.total
       1 == subclassSearch1?.total
+
+      // next will test domain instances are correctly/fully returned from ES
+
+
   }
 
   void addTestData() {
