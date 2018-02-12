@@ -11,6 +11,7 @@ class InsuranceCase extends CaseFile {
     }
 
     static searchable = {
+      root true
       only = ['policyHolder']
     }
 }

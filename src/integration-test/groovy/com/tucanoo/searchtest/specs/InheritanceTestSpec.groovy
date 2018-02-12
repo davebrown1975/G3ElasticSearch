@@ -20,36 +20,37 @@ class InheritanceTestSpec extends Specification {
 
   boolean addedTestData = false
 
-  void "Test elastic search returns results for searches against fields in both base and subclasses"() {
-    given:
-      // add sample data
-      addTestData()
-
-      // ES doesn't appear to be mirroring changes so force reindex - doesn't appear to be happening either.
-      elasticSearchService.index()
-      elasticSearchAdminService.refresh()
-
-
-    when:
-      // first search against field in base class
-      def baseSearchResult = elasticSearchService.search('Test')
-
-      // secondly search against data we know is in MedicalCase subclass
-      def subclassSearch1 = elasticSearchService.search('Mary')
-
-    then:
-      // check we've definately got expected records in the db
+  void "confirm we have entries persisted"() {
+    expect:
+      // check we've definitely got expected records in the db
       2 == CaseFile.count()
       1 == MedicalCase.count()
       1 == InsuranceCase.count()
+  }
 
+  void "Test elastic search returns results for searches against fields in base class"() {
+    when:
+      // first search against field in base class
+      def baseSearchResult = elasticSearchService.search('Test')
+      println "SR = "
+      println baseSearchResult
+    then:
       // check results were returned from ES
       1 == baseSearchResult?.total
+      "Test Insurance Case" == baseSearchResult.searchResults[0].caseName    
+  }
+
+  void "Test elastic search returns results for searches against fields subclasses"() {
+    when:
+      // secondly search against data we know is in MedicalCase subclass
+      def subclassSearch1 = elasticSearchService.search('Mary')
+      println "SS = "
+      println subclassSearch1
+
+    then:
+      // check results were returned from ES
       1 == subclassSearch1?.total
-
-      // next will test domain instances are correctly/fully returned from ES
-
-
+      "Medical Case" == subclassSearch1.searchResults[0].caseName    // FAILS as it doesn't retrieve the full record
   }
 
   void addTestData() {
